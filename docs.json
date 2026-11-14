@@ -16,6 +16,12 @@
           "index",
           "quickstart"
         ]
+      },
+      {
+        "group": "Trading bots",
+        "pages": [
+          "trading-bots/pending-order-v2"
+        ]
       }
     ],
     "global": {
