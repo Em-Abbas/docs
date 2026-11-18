@@ -55,7 +55,7 @@ export function DetailsTab({ product: p, categories }: { product: Product; categ
           </Field>
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Cover image" hint="PNG, JPG or WEBP. Resized to 1200px.">
-              <input name="image" type="file" accept="image/*" className={cn(inputClass, "py-1.5")} />
+              <input name="image" type="file" accept="image/*" className={cn(inputClass, "w-full py-1.5")} />
             </Field>
             <Field label="Sort order" hint="Lower numbers show first.">
               <Input name="sortOrder" type="number" defaultValue={p.sortOrder} />

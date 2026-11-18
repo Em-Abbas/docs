@@ -15,6 +15,7 @@ export function ActionForm({
   action,
   children,
   className,
+  id,
   resetOnSuccess,
   hideMessages,
   onSuccess,
@@ -22,6 +23,7 @@ export function ActionForm({
   action: (prev: ActionState, data: FormData) => Promise<ActionState>;
   children: ReactNode;
   className?: string;
+  id?: string;
   resetOnSuccess?: boolean;
   hideMessages?: boolean;
   onSuccess?: (state: ActionState) => void;
@@ -41,6 +43,7 @@ export function ActionForm({
     <FormCtx.Provider value={{ pending, state }}>
       <form
         ref={ref}
+        id={id}
         className={className}
         onSubmit={(e) => {
           e.preventDefault();

@@ -46,18 +46,21 @@ export function LinkButton({
 /* ------------------------------------------------------------------- forms */
 
 export const inputClass =
-  "block w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-fg placeholder:text-muted/70 shadow-xs outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/20 disabled:opacity-60";
+  "block rounded-lg border border-border bg-surface px-3 py-2 text-sm text-fg placeholder:text-muted/70 shadow-xs outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/20 disabled:opacity-60";
+
+/** Full width unless the caller sets its own width. */
+const width = (className?: string) => (/(^|\s)w-/.test(className ?? "") ? "" : "w-full");
 
 export function Input({ className, ...props }: ComponentProps<"input">) {
-  return <input className={cn(inputClass, "h-10", className)} {...props} />;
+  return <input className={cn(inputClass, width(className), "h-10", className)} {...props} />;
 }
 
 export function Textarea({ className, ...props }: ComponentProps<"textarea">) {
-  return <textarea className={cn(inputClass, "min-h-24", className)} {...props} />;
+  return <textarea className={cn(inputClass, width(className), "min-h-24", className)} {...props} />;
 }
 
 export function Select({ className, ...props }: ComponentProps<"select">) {
-  return <select className={cn(inputClass, "h-10 pr-8", className)} {...props} />;
+  return <select className={cn(inputClass, width(className), "h-10 pr-8", className)} {...props} />;
 }
 
 export function Label({ className, ...props }: ComponentProps<"label">) {

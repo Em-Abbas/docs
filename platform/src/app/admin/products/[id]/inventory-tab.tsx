@@ -169,7 +169,7 @@ export async function InventoryTab({
                 ) : f.type === "image" || f.type === "file" ? (
                   <div className="space-y-2">
                     <Input name={f.key} placeholder="https://… (or upload below)" />
-                    <input name={`${f.key}.upload`} type="file" accept={f.type === "image" ? "image/*" : undefined} className={cn(inputClass, "py-1.5 text-xs")} />
+                    <input name={`${f.key}.upload`} type="file" accept={f.type === "image" ? "image/*" : undefined} className={cn(inputClass, "w-full py-1.5 text-xs")} />
                   </div>
                 ) : (
                   <Input

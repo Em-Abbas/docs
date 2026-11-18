@@ -68,7 +68,7 @@ export async function UploadsTab({ productId, fields }: { productId: number; fie
           <CardHeader title="2. Upload your data" description="Up to 50,000 rows / 25 MB per file. Exact duplicates are skipped automatically." />
           <ActionForm action={uploadCsvAction} resetOnSuccess className="space-y-4 p-5">
             <input type="hidden" name="id" value={productId} />
-            <input name="file" type="file" accept=".csv,text/csv" required className={cn(inputClass, "py-2")} />
+            <input name="file" type="file" accept=".csv,text/csv" required className={cn(inputClass, "w-full py-2")} />
             <ul className="space-y-1 text-xs text-muted">
               <li>• Headers must match the field labels (or column letters A–J).</li>
               <li>• Rows starting with # are ignored.</li>
