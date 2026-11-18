@@ -15,7 +15,9 @@ const secureCookies = () => (process.env.APP_URL ?? "").startsWith("https://");
 
 export async function requestMeta() {
   const h = await headers();
-  const ip = (h.get("x-forwarded-for")?.split(",")[0] ?? h.get("x-real-ip") ?? "unknown").trim();
+  // X-Real-IP is set by the reverse proxy (see Caddyfile). Otherwise use the
+  // last X-Forwarded-For hop — the one our proxy added — since clients can forge earlier entries.
+  const ip = (h.get("x-real-ip") ?? h.get("x-forwarded-for")?.split(",").pop() ?? "unknown").trim();
   return { ip, userAgent: (h.get("user-agent") ?? "").slice(0, 300) };
 }
 

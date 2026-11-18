@@ -1,0 +1,10 @@
+{$DOMAIN} {
+	encode zstd gzip
+	request_body {
+		max_size 30MB
+	}
+	reverse_proxy app:3000 {
+		# Pass the real client IP; the app uses it for rate limiting.
+		header_up X-Real-IP {remote_host}
+	}
+}

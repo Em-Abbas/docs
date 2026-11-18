@@ -122,7 +122,7 @@ export default async function ProductPage({
         </div>
 
         {/* Buy box */}
-        <div className="space-y-4 lg:sticky lg:top-20 lg:h-fit">
+        <div className="order-first space-y-4 lg:order-none lg:sticky lg:top-20 lg:h-fit">
           <Card className="p-5">
             <div className="flex items-baseline justify-between">
               <span className="text-3xl font-semibold tracking-tight tabular">{formatMoney(p.price)}</span>

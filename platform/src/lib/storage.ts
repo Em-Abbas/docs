@@ -3,7 +3,7 @@ import { randomBytes } from "node:crypto";
 import { mkdir, readFile, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 
-const ROOT = path.resolve(process.env.STORAGE_DIR ?? "./storage");
+const ROOT = path.resolve(/*turbopackIgnore: true*/ process.env.STORAGE_DIR ?? "./storage");
 
 export type UploadKind = "image" | "receipt" | "item";
 
@@ -63,8 +63,8 @@ export async function saveUpload(input: FormDataEntryValue | null, kind: UploadK
 
 async function write(key: string, data: Buffer): Promise<string> {
   const full = path.join(ROOT, key);
-  await mkdir(path.dirname(full), { recursive: true });
-  await writeFile(full, data);
+  await mkdir(/*turbopackIgnore: true*/ path.dirname(full), { recursive: true });
+  await writeFile(/*turbopackIgnore: true*/ full, data);
   return key;
 }
 
@@ -72,10 +72,10 @@ export async function readStored(key: string): Promise<{ data: Buffer; type: str
   const full = path.resolve(ROOT, key);
   if (!full.startsWith(ROOT + path.sep)) return null;
   try {
-    const info = await stat(full);
+    const info = await stat(/*turbopackIgnore: true*/ full);
     if (!info.isFile()) return null;
     const ext = path.extname(full).slice(1).toLowerCase();
-    return { data: await readFile(full), type: MIME[ext] ?? "application/octet-stream", size: info.size };
+    return { data: await readFile(/*turbopackIgnore: true*/ full), type: MIME[ext] ?? "application/octet-stream", size: info.size };
   } catch {
     return null;
   }
