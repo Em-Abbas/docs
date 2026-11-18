@@ -1,7 +1,7 @@
 import "server-only";
-import { and, eq, inArray, lte, sql } from "drizzle-orm";
+import { and, eq, inArray, isNull, lte, ne, or, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { resellerEarnings, users } from "@/lib/db/schema";
+import { orderItems, resellerEarnings, users } from "@/lib/db/schema";
 
 /** Move earnings whose hold period has passed from pending to available. */
 export async function releaseMaturedEarnings(resellerId?: number) {
@@ -9,14 +9,17 @@ export async function releaseMaturedEarnings(resellerId?: number) {
     const due = await tx
       .select({ id: resellerEarnings.id, resellerId: resellerEarnings.resellerId, net: resellerEarnings.net })
       .from(resellerEarnings)
+      .innerJoin(orderItems, eq(orderItems.id, resellerEarnings.orderItemId))
       .where(
         and(
           eq(resellerEarnings.status, "pending"),
           lte(resellerEarnings.releaseAt, new Date()),
+          // Hold earnings while the buyer's refund request is still open.
+          or(isNull(orderItems.refundStatus), ne(orderItems.refundStatus, "pending")),
           resellerId ? eq(resellerEarnings.resellerId, resellerId) : undefined,
         ),
       )
-      .for("update", { skipLocked: true });
+      .for("update", { of: resellerEarnings, skipLocked: true });
     if (!due.length) return;
 
     await tx

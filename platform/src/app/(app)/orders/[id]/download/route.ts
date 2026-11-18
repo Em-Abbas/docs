@@ -28,7 +28,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
       Papa.unparse({
         fields: fields.map((f) => f.label),
         data: items.map((i) => fields.map((f) => i.data[f.key] ?? "")),
-      });
+      }, { escapeFormulae: true });
   } else {
     const s = await getSettings();
     const width = Math.max(...fields.map((f) => f.label.length), 4);

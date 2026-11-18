@@ -6,6 +6,7 @@ import { deletePaymentMethodAction, savePaymentMethodAction } from "@/lib/action
 import { db } from "@/lib/db";
 import { paymentMethods, type PaymentMethod } from "@/lib/db/schema";
 import { centsToInput, formatMoney } from "@/lib/format";
+import { requireAdmin } from "@/lib/auth/session";
 
 export const metadata = { title: "Payment wallets" };
 
@@ -55,6 +56,7 @@ function MethodFields({ m }: { m?: PaymentMethod }) {
 }
 
 export default async function WalletsPage() {
+  await requireAdmin();
   const methods = await db.select().from(paymentMethods).orderBy(asc(paymentMethods.sortOrder));
   const qrs = await Promise.all(methods.map((m) => QRCode.toString(m.address, { type: "svg", margin: 1, color: { dark: "#09090b", light: "#ffffff" } })));
 

@@ -7,6 +7,7 @@ import { db } from "@/lib/db";
 import { inventoryItems, payouts, productFields, products, uploadBatches, users } from "@/lib/db/schema";
 import { formatDate, formatMoney } from "@/lib/format";
 import { releaseMaturedEarnings } from "@/lib/reseller";
+import { requireAdmin } from "@/lib/auth/session";
 
 export const metadata = { title: "Resellers" };
 
@@ -18,6 +19,7 @@ const TABS = [
 ] as const;
 
 export default async function AdminResellersPage({ searchParams }: { searchParams: Promise<{ tab?: string }> }) {
+  await requireAdmin();
   const sp = await searchParams;
   const tab = TABS.some((t) => t.id === sp.tab) ? sp.tab! : "applications";
   return (

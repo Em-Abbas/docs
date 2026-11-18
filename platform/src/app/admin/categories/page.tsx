@@ -4,10 +4,12 @@ import { Badge, Card, CardHeader, Checkbox, Field, Input, PageHeader, Table, td,
 import { deleteCategoryAction, saveCategoryAction } from "@/lib/actions/catalog";
 import { db } from "@/lib/db";
 import { categories, products } from "@/lib/db/schema";
+import { requireAdmin } from "@/lib/auth/session";
 
 export const metadata = { title: "Categories" };
 
 export default async function CategoriesPage() {
+  await requireAdmin();
   const rows = await db
     .select({ c: categories, products: count(products.id) })
     .from(categories)

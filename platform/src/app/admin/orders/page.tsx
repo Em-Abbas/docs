@@ -4,11 +4,13 @@ import { Card, EmptyState, Input, PageHeader, Pagination, StatusBadge, Table, td
 import { db } from "@/lib/db";
 import { orders, users } from "@/lib/db/schema";
 import { formatDate, formatMoney } from "@/lib/format";
+import { requireAdmin } from "@/lib/auth/session";
 
 export const metadata = { title: "Orders" };
 const PAGE = 50;
 
 export default async function AdminOrdersPage({ searchParams }: { searchParams: Promise<{ q?: string; page?: string }> }) {
+  await requireAdmin();
   const sp = await searchParams;
   const q = (sp.q ?? "").trim();
   const page = Math.max(1, Number(sp.page) || 1);

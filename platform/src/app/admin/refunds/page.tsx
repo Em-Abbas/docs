@@ -6,11 +6,13 @@ import { resolveRefundAction } from "@/lib/actions/shop";
 import { db } from "@/lib/db";
 import { orderItems, orders, refundRequests, users } from "@/lib/db/schema";
 import { formatDate, formatMoney } from "@/lib/format";
+import { requireAdmin } from "@/lib/auth/session";
 
 export const metadata = { title: "Refunds" };
 const TABS = ["pending", "approved", "rejected"] as const;
 
 export default async function RefundsPage({ searchParams }: { searchParams: Promise<{ status?: string }> }) {
+  await requireAdmin();
   const sp = await searchParams;
   const status = TABS.includes(sp.status as never) ? (sp.status as (typeof TABS)[number]) : "pending";
   const rows = await db
@@ -64,6 +66,9 @@ export default async function RefundsPage({ searchParams }: { searchParams: Prom
                 </div>
               </div>
               <blockquote className="mt-3 border-l-2 border-border pl-3 text-sm">{r.reason}</blockquote>
+              {item.sellerId && r.status === "pending" && (
+                <p className="mt-2 text-xs text-amber-700 dark:text-amber-400">Reseller stock — approving reverses the reseller&apos;s earning for this item.</p>
+              )}
               <dl className="mt-3 grid gap-x-6 gap-y-1 rounded-lg bg-subtle p-3 text-xs sm:grid-cols-2">
                 {order.fields.map((f) => (
                   <div key={f.key} className="flex gap-2">

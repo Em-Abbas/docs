@@ -5,11 +5,13 @@ import { Badge, Card, EmptyState, Input, PageHeader, Pagination, Select, StatusB
 import { db } from "@/lib/db";
 import { users } from "@/lib/db/schema";
 import { formatDate, formatMoney } from "@/lib/format";
+import { requireAdmin } from "@/lib/auth/session";
 
 export const metadata = { title: "Users" };
 const PAGE = 50;
 
 export default async function UsersPage({ searchParams }: { searchParams: Promise<{ q?: string; role?: string; status?: string; page?: string }> }) {
+  await requireAdmin();
   const sp = await searchParams;
   const page = Math.max(1, Number(sp.page) || 1);
   const where: SQL[] = [];

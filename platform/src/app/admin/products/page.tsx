@@ -7,10 +7,12 @@ import { categories, products } from "@/lib/db/schema";
 import { formatMoney } from "@/lib/format";
 import { stockCounts } from "@/lib/queries";
 import { fileUrl } from "@/lib/storage";
+import { requireAdmin } from "@/lib/auth/session";
 
 export const metadata = { title: "Products" };
 
 export default async function ProductsPage() {
+  await requireAdmin();
   const rows = await db
     .select({ p: products, category: categories.name })
     .from(products)

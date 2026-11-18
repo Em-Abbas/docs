@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { and, asc, count, eq } from "drizzle-orm";
+import { and, asc, count, eq, ne, sql } from "drizzle-orm";
 import { ExternalLink } from "lucide-react";
 import { ActionForm, SubmitButton } from "@/components/client/form";
 import { DepositThread } from "@/components/deposit-thread";
@@ -11,10 +11,12 @@ import { depositMessages, deposits, users } from "@/lib/db/schema";
 import { explorerUrl } from "@/lib/deposits";
 import { centsToInput, formatDate, formatMoney } from "@/lib/format";
 import { fileUrl } from "@/lib/storage";
+import { requireAdmin } from "@/lib/auth/session";
 
 export const metadata = { title: "Review deposit" };
 
 export default async function AdminDepositPage({ params }: { params: Promise<{ id: string }> }) {
+  await requireAdmin();
   const id = Number((await params).id);
   if (!Number.isInteger(id)) notFound();
   const [row] = await db.select({ d: deposits, user: users }).from(deposits).innerJoin(users, eq(users.id, deposits.userId)).where(eq(deposits.id, id));
@@ -27,6 +29,12 @@ export default async function AdminDepositPage({ params }: { params: Promise<{ i
       .from(deposits)
       .where(and(eq(deposits.userId, user.id), eq(deposits.status, "approved"))),
   ]);
+  const reused = d.txHash
+    ? await db
+        .select({ id: deposits.id, status: deposits.status })
+        .from(deposits)
+        .where(and(sql`lower(${deposits.txHash}) = lower(${d.txHash})`, ne(deposits.id, d.id)))
+    : [];
   const receipt = fileUrl(d.receiptPath);
   const isPdf = d.receiptPath?.endsWith(".pdf");
   const explorer = explorerUrl(d.network, d.txHash);
@@ -43,6 +51,21 @@ export default async function AdminDepositPage({ params }: { params: Promise<{ i
         }
         description={`${user.username} · ${d.methodName} · created ${formatDate(d.createdAt)}`}
       />
+      {reused.length > 0 && (
+        <Alert tone="error" className="mb-6">
+          This transaction hash was also submitted on deposit{reused.length > 1 ? "s" : ""}{" "}
+          {reused.map((r, i) => (
+            <span key={r.id}>
+              {i > 0 && ", "}
+              <Link href={`/admin/deposits/${r.id}`} className="font-medium underline">
+                #{r.id}
+              </Link>{" "}
+              ({r.status.replace("_", " ")})
+            </span>
+          ))}
+          . Check it isn&apos;t the same payment before approving.
+        </Alert>
+      )}
       <div className="grid gap-6 lg:grid-cols-[1fr_22rem]">
         <div className="space-y-6">
           <Card>

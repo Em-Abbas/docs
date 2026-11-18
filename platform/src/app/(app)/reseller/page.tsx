@@ -220,7 +220,7 @@ async function StockTab({ userId }: { userId: number }) {
             <tr>
               <th className={th}>Product</th>
               <th className={th}>File</th>
-              <th className={th}>Accepted</th>
+              <th className={th}>Submitted</th>
               <th className={th}>Rejected</th>
               <th className={th}>Status</th>
               <th className={th}>Date</th>
@@ -231,7 +231,7 @@ async function StockTab({ userId }: { userId: number }) {
               <tr key={b.id}>
                 <td className={td}>{product}</td>
                 <td className={`${td} text-muted`}>{b.filename}</td>
-                <td className={`${td} tabular`}>{b.acceptedRows}</td>
+                <td className={`${td} tabular`}>{b.totalRows - b.rejectedRows}</td>
                 <td className={`${td} tabular text-muted`}>{b.rejectedRows}</td>
                 <td className={td}>
                   <StatusBadge status={b.status} />

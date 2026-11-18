@@ -50,7 +50,9 @@ export function validateValue(field: Pick<ProductField, "type" | "label" | "requ
     case "url":
     case "image":
     case "file":
-      if (v.startsWith("/")) return { value: v };
+      if (v.startsWith("/")) {
+        return /^\/(media|files)\/[A-Za-z0-9._\/-]+$/.test(v) && !v.includes("..") ? { value: v } : { error: `${field.label} must be a full https:// link` };
+      }
       try {
         const u = new URL(v);
         return ["http:", "https:"].includes(u.protocol) ? { value: v } : { error: `${field.label} must be an http(s) link` };

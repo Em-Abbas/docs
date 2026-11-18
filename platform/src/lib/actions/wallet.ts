@@ -1,7 +1,7 @@
 "use server";
 
 import { randomInt } from "node:crypto";
-import { and, count, eq, gt, inArray } from "drizzle-orm";
+import { and, count, eq, gt, inArray, ne, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
@@ -100,6 +100,20 @@ export async function submitReceiptAction(_: ActionState, fd: FormData): Promise
   }
   if (!receiptPath) return fail("Attach a screenshot or PDF of your payment.", { receipt: "Required" });
   const txHash = str(fd, "txHash").slice(0, 200) || null;
+  if (txHash) {
+    const [reused] = await db
+      .select({ id: deposits.id })
+      .from(deposits)
+      .where(
+        and(
+          sql`lower(${deposits.txHash}) = lower(${txHash})`,
+          ne(deposits.id, d.id),
+          inArray(deposits.status, ["under_review", "needs_info", "approved"]),
+        ),
+      )
+      .limit(1);
+    if (reused) return fail("This transaction hash was already used for another deposit.");
+  }
 
   const [updated] = await db
     .update(deposits)
@@ -141,10 +155,17 @@ export async function replyDepositAction(_: ActionState, fd: FormData): Promise<
   }
   if (body.length < 2 && !attachmentPath) return fail("Write a reply or attach a file.");
 
-  await db.transaction(async (tx) => {
+  const reopened = await db.transaction(async (tx) => {
+    const [row] = await tx
+      .update(deposits)
+      .set({ status: "under_review" })
+      .where(and(eq(deposits.id, d.id), eq(deposits.status, "needs_info")))
+      .returning({ id: deposits.id });
+    if (!row) return false;
     await tx.insert(depositMessages).values({ depositId: d.id, authorId: user.id, body: body.slice(0, 2000) || "(attachment)", attachmentPath });
-    await tx.update(deposits).set({ status: "under_review" }).where(eq(deposits.id, d.id));
+    return true;
   });
+  if (!reopened) return fail("This deposit isn't waiting for your reply.");
   await notifyAdmins(`Deposit #${d.id}: user replied`, `${user.username} replied:\n${body}`, `/admin/deposits/${d.id}`);
   revalidatePath(`/wallet/deposits/${d.id}`);
   return done("Reply sent.");

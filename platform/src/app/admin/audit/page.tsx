@@ -3,11 +3,13 @@ import { Badge, Card, PageHeader, Pagination, Table, td, th } from "@/components
 import { db } from "@/lib/db";
 import { auditLogs, users } from "@/lib/db/schema";
 import { formatDate } from "@/lib/format";
+import { requireAdmin } from "@/lib/auth/session";
 
 export const metadata = { title: "Audit log" };
 const PAGE = 100;
 
 export default async function AuditPage({ searchParams }: { searchParams: Promise<{ page?: string }> }) {
+  await requireAdmin();
   const page = Math.max(1, Number((await searchParams).page) || 1);
   const rows = await db
     .select({ a: auditLogs, actor: users.username })

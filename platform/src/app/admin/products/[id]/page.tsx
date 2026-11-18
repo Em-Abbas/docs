@@ -9,6 +9,7 @@ import { stockCounts } from "@/lib/queries";
 import { DetailsTab, FieldsTab, PricingTab } from "./settings-tabs";
 import { InventoryTab } from "./inventory-tab";
 import { UploadsTab } from "./uploads-tab";
+import { requireAdmin } from "@/lib/auth/session";
 
 const TABS = [
   { id: "details", label: "Details" },
@@ -30,6 +31,7 @@ export default async function ProductEditPage({
   params: Promise<{ id: string }>;
   searchParams: Promise<Record<string, string | undefined>>;
 }) {
+  await requireAdmin();
   const id = Number((await params).id);
   const sp = await searchParams;
   if (!Number.isInteger(id)) notFound();

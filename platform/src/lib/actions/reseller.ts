@@ -114,24 +114,25 @@ export async function resellerUploadAction(_: ActionState, fd: FormData): Promis
         rejectedRows: parsed.errors.length,
         duplicateRows: parsed.rows.length - inserted,
         errors: parsed.errors.slice(0, 200),
-        ...(inserted === 0 ? { status: "rejected" as const, reviewNote: "No new rows" } : {}),
       })
       .where(eq(uploadBatches.id, batch.id));
     return { inserted, batchId: batch.id };
   });
 
-  if (summary.inserted > 0) {
+  // Feedback counts valid rows, not inserted rows, so uploads can't be used to
+  // test whether a guessed row already exists. Admins see the real numbers.
+  if (parsed.rows.length > 0) {
     await notifyAdmins(
       "Reseller stock to review",
-      `${user.username} uploaded ${summary.inserted} item(s) for ${product.name}.`,
+      `${user.username} uploaded ${summary.inserted} new item(s) for ${product.name} (${parsed.rows.length - summary.inserted} duplicate(s) skipped).`,
       "/admin/resellers?tab=stock",
     );
   }
   revalidatePath("/reseller");
   const extra = parsed.errors.length ? ` ${parsed.errors.length} row(s) rejected.` : "";
-  return summary.inserted
-    ? done(`${summary.inserted} item(s) submitted for review.${extra}`)
-    : fail(`No new items were added (duplicates or invalid rows).${extra}`);
+  return parsed.rows.length
+    ? done(`${parsed.rows.length} item(s) submitted for review.${extra}`)
+    : fail(`No valid rows found.${extra}`);
 }
 
 /* ---------------------------------------------------------------- admin */

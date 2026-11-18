@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import { deposits, orders, payouts, products, refundRequests, uploadBatches, users } from "@/lib/db/schema";
 import { formatDate, formatMoney } from "@/lib/format";
 import { stockCounts } from "@/lib/queries";
+import { requireAdmin } from "@/lib/auth/session";
 
 export const metadata = { title: "Dashboard" };
 
@@ -17,6 +18,7 @@ const startOfToday = () => {
 };
 
 export default async function AdminDashboard() {
+  await requireAdmin();
   const revenue = (from: Date) =>
     db
       .select({ v: sql<number>`coalesce(sum(${orders.total} - ${orders.refunded}),0)::bigint`, n: count() })

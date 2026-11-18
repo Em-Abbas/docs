@@ -3,10 +3,12 @@ import { Card, CardHeader, Checkbox, Field, Input, PageHeader } from "@/componen
 import { saveSettingsAction } from "@/lib/actions/admin";
 import { centsToInput } from "@/lib/format";
 import { getSettings } from "@/lib/settings";
+import { requireAdmin } from "@/lib/auth/session";
 
 export const metadata = { title: "Settings" };
 
 export default async function SettingsPage() {
+  await requireAdmin();
   const s = await getSettings();
   return (
     <>

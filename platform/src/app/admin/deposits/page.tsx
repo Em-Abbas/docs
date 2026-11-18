@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { deposits, users } from "@/lib/db/schema";
 import { expireStaleDeposits } from "@/lib/deposits";
 import { formatDate, formatMoney } from "@/lib/format";
+import { requireAdmin } from "@/lib/auth/session";
 
 export const metadata = { title: "Deposits" };
 
@@ -17,6 +18,7 @@ const TABS = {
 } as const;
 
 export default async function AdminDepositsPage({ searchParams }: { searchParams: Promise<{ tab?: string }> }) {
+  await requireAdmin();
   const sp = await searchParams;
   const tab = (sp.tab && sp.tab in TABS ? sp.tab : "review") as keyof typeof TABS;
   await expireStaleDeposits();

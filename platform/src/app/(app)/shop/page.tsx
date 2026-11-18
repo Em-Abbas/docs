@@ -9,12 +9,14 @@ import { formatMoney } from "@/lib/format";
 import { fromPrice } from "@/lib/pricing";
 import { stockCounts } from "@/lib/queries";
 import { fileUrl } from "@/lib/storage";
+import { requireUser } from "@/lib/auth/session";
 
 export const metadata = { title: "Shop" };
 
 type SP = { q?: string; category?: string; sort?: string; view?: string; stock?: string };
 
 export default async function ShopPage({ searchParams }: { searchParams: Promise<SP> }) {
+  await requireUser();
   const sp = await searchParams;
   const view = sp.view === "list" ? "list" : "grid";
   const cats = await db.select().from(categories).where(eq(categories.isActive, true)).orderBy(asc(categories.sortOrder), asc(categories.name));

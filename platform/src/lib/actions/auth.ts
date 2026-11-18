@@ -98,8 +98,8 @@ export async function regenerateSetupCodesAction(_: ActionState): Promise<Action
 }
 
 export async function generatePhraseAction(_: ActionState): Promise<ActionState> {
-  const user = (await setupUser()) ?? (await getSession())?.user;
-  if (!user) return fail("Your session expired. Log in again.");
+  const user = await setupUser();
+  if (!user) return fail("Your setup session expired. Log in again to continue.");
   const phrase = generateMnemonic(wordlist, 128);
   await db.update(users).set({ recoveryPhraseHash: await hashSecret(phrase) }).where(eq(users.id, user.id));
   return done(undefined, { phrase });
@@ -115,8 +115,8 @@ const ownPhraseSchema = z
   .refine((v) => v.phrase === v.confirm, { path: ["confirm"], message: "Phrases don't match" });
 
 export async function setOwnPhraseAction(_: ActionState, fd: FormData): Promise<ActionState> {
-  const user = (await setupUser()) ?? (await getSession())?.user;
-  if (!user) return fail("Your session expired. Log in again.");
+  const user = await setupUser();
+  if (!user) return fail("Your setup session expired. Log in again to continue.");
   const parsed = ownPhraseSchema.safeParse({ phrase: String(fd.get("phrase") ?? ""), confirm: String(fd.get("confirm") ?? "") });
   if (!parsed.success) return fail("Check your recovery phrase.", zodErrors(parsed.error.issues));
   await db.update(users).set({ recoveryPhraseHash: await hashSecret(parsed.data.phrase) }).where(eq(users.id, user.id));
@@ -219,6 +219,8 @@ export async function recoverAction(_: ActionState, fd: FormData): Promise<Actio
       confirm: String(fd.get("confirm") ?? ""),
     });
   if (!parsed.success) return fail("Check the highlighted fields.", zodErrors(parsed.error.issues));
+  if (!rateLimit(`recover-user:${parsed.data.username.toLowerCase()}`, 5, 3600_000).ok)
+    return fail("Too many attempts for this account. Try again in an hour.");
 
   const user = await findByUsername(parsed.data.username);
   const ok = await verifySecret(normalizePhrase(parsed.data.phrase), user?.recoveryPhraseHash);

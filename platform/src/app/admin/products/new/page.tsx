@@ -4,10 +4,12 @@ import { Card, Field, Input, PageHeader, Select } from "@/components/ui";
 import { createProductAction } from "@/lib/actions/catalog";
 import { db } from "@/lib/db";
 import { categories } from "@/lib/db/schema";
+import { requireAdmin } from "@/lib/auth/session";
 
 export const metadata = { title: "New product" };
 
 export default async function NewProductPage() {
+  await requireAdmin();
   const cats = await db.select().from(categories).orderBy(asc(categories.sortOrder));
   return (
     <>
